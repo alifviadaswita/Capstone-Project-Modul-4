@@ -31,7 +31,7 @@ st.set_page_config(
 @st.cache_resource
 def load_model():
     try:
-        model = YOLO('best.pt')  
+        model = YOLO('models/best.pt')  
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
