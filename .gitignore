@@ -25,11 +25,8 @@ runs/
 results/
 training_summary.json
 training_summary_augmented.json
-*.pt
 *.onnx
 
-# --- STREAMLIT CACHE ---
-.streamlit/
 
 # --- NOTEBOOK AUTOSAVE & CHECKPOINTS ---
 .ipynb_checkpoints/
