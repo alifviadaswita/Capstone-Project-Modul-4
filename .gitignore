@@ -1,0 +1,65 @@
+# =========================================
+# PROJECT-SPECIFIC IGNORE (Capstone 4 Final)
+# =========================================
+
+# --- DATASET & EXTRACTED FILES ---
+extracted/
+dataset/
+*.zip
+*.rar
+*.7z
+
+# YOLO dataset labels & images (jika ingin simpan cuma config)
+*.jpg
+*.png
+*.jpeg
+*.bmp
+*.tiff
+*.gif
+
+# YOLO dataset split metadata
+*.cache
+
+# --- TRAINING OUTPUTS ---
+runs/
+results/
+training_summary.json
+training_summary_augmented.json
+*.pt
+*.onnx
+
+# --- STREAMLIT CACHE ---
+.streamlit/
+
+# --- NOTEBOOK AUTOSAVE & CHECKPOINTS ---
+.ipynb_checkpoints/
+*.ipynb_autosave
+
+# --- PYTHON CACHE ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- VS CODE ---
+.vscode/
+*.code-workspace
+
+# --- WINDOWS SYSTEM FILES ---
+Thumbs.db
+desktop.ini
+
+# --- LOGS ---
+*.log
+
+# --- TEMP / MISC ---
+*.tmp
+*.bak
+*.old
+
+# --- IGNORE LARGE IMAGES RESULT FILES ---
+Results.png
+Results\ With\ aug.png
+
+# --- MODEL FOLDERS (if generated automatically) ---
+models/

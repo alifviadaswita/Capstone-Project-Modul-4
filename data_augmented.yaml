@@ -1,0 +1,16 @@
+names:
+- helmet
+- no-helmet
+- no-vest
+- person
+- vest
+nc: 5
+roboflow:
+  license: CC BY 4.0
+  project: construction-safety-gsnvb-jl6el
+  url: https://universe.roboflow.com/personal-project-kej16/construction-safety-gsnvb-jl6el/dataset/1
+  version: 1
+  workspace: personal-project-kej16
+test: ../test/images
+train: /content/drive/MyDrive/Colab Notebooks/Capstone 4/extracted/train_augmented/images
+val: ../valid/images
