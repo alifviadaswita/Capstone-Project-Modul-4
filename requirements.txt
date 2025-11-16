@@ -1,6 +1,10 @@
 streamlit
-ultralytics
+torch
+torchvision
+ultralytics==8.0.196
 pillow
 matplotlib
 numpy
 opencv-python-headless==4.7.0.72
+opencv-python==0.0.0
+--no-binary opencv-python
