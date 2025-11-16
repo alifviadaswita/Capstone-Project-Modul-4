@@ -28,7 +28,6 @@ def load_model(path="models/best_withAug.pt"):
         st.error("Error loading model. Pastikan file model ada di folder `models/`.\n\nDetail: " + str(e))
         return None
 
-####u
 # ============================================================
 # Process Image
 # ============================================================
