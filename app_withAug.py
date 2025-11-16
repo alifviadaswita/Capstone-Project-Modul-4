@@ -16,8 +16,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ============================================================
+# Load YOLO Model
+# ============================================================
 @st.cache_resource
-def load_model(path="models/best_withAug.pt"):
+def load_model(path="best_withAug.pt"):
     try:
         model = YOLO(path)
         return model
@@ -25,14 +28,20 @@ def load_model(path="models/best_withAug.pt"):
         st.error("Error loading model. Pastikan file model ada di folder `models/`.\n\nDetail: " + str(e))
         return None
 
+
+# ============================================================
+# Process Image
+# ============================================================
 def process_image(image, model, conf_thres, iou_thres):
     img_array = np.array(image.convert("RGB"))
+
     results = model.predict(
         source=img_array,
         conf=conf_thres,
         iou=iou_thres,
         verbose=False
     )
+
     detections = []
     if len(results) > 0 and getattr(results[0], "boxes", None) is not None:
         boxes = results[0].boxes
@@ -41,15 +50,22 @@ def process_image(image, model, conf_thres, iou_thres):
             conf = float(boxes.conf[i].cpu().numpy())
             cls_id = int(boxes.cls[i].cpu().numpy())
             cls_name = model.names[cls_id]
+
             detections.append({
                 'bbox': [x1, y1, x2, y2],
                 'confidence': conf,
                 'class_name': cls_name
             })
+
     return detections, results
 
+
+# ============================================================
+# Draw Boxes Manually (fallback)
+# ============================================================
 def draw_detections(image, detections):
     img_draw = image.copy()
+
     color_map = {
         'helmet': (0, 255, 0),
         'vest': (0, 255, 255),
@@ -57,11 +73,13 @@ def draw_detections(image, detections):
         'no-vest': (255, 0, 0),
         'person': (255, 255, 255)
     }
+
     for det in detections:
         x1, y1, x2, y2 = det['bbox']
         label = det['class_name']
         conf = det['confidence']
         color = color_map.get(label, (128, 128, 128))
+
         cv2.rectangle(img_draw, (x1, y1), (x2, y2), color, 2)
         cv2.putText(
             img_draw,
@@ -72,14 +90,23 @@ def draw_detections(image, detections):
             color,
             2
         )
+
     return img_draw
 
+
+# ============================================================
+# Convert Image to Bytes for Download
+# ============================================================
 def image_to_bytes(img_array):
     img = Image.fromarray(cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB))
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
     return buf.getvalue()
 
+
+# ============================================================
+# STREAMLIT APP MAIN
+# ============================================================
 def main():
     st.markdown("<h1 style='text-align: center;'>🦺 Construction Safety Detection System</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Deteksi penggunaan alat keselamatan kerja (helm dan rompi)</p>", unsafe_allow_html=True)
@@ -89,12 +116,15 @@ def main():
     if model is None:
         st.stop()
 
+    # ---------------- Sidebar ----------------
     with st.sidebar:
         st.header("⚙️ Settings")
         conf_thres = st.slider("Confidence Threshold", 0.1, 1.0, 0.25, 0.05)
         iou_thres = st.slider("IoU Threshold", 0.1, 1.0, 0.45, 0.05)
         st.info("Gunakan slider untuk menyesuaikan sensitivitas deteksi")
         st.markdown("---")
+
+        # History
         st.subheader("🕒 History")
         if "history" in st.session_state and len(st.session_state["history"]) > 0:
             for record in reversed(st.session_state["history"][-5:]):
@@ -102,34 +132,40 @@ def main():
         else:
             st.info("Belum ada histori deteksi.")
 
+    # ---------------- Upload Area ----------------
     uploaded_file = st.file_uploader("📤 Upload Gambar Lokasi Konstruksi", type=["jpg", "jpeg", "png"])
+
     if uploaded_file is not None:
         image = Image.open(uploaded_file).convert("RGB")
         col1, col2 = st.columns(2)
 
+        # Original Image
         with col1:
             st.subheader("📸 Original Image")
             st.image(image, use_column_width=True)
 
+        # Detection
         with col2:
             st.subheader("🎯 Detection Results")
             with st.spinner("Sedang memproses gambar..."):
                 detections, results = process_image(image, model, conf_thres, iou_thres)
+
                 if len(results) > 0:
                     try:
                         plotted = results[0].plot()
                         st.image(plotted, use_column_width=True)
                         img_with_boxes = cv2.cvtColor(plotted, cv2.COLOR_RGB2BGR)
-                    except Exception:
+                    except:
                         img_with_boxes = draw_detections(np.array(image), detections)
                         st.image(img_with_boxes, use_column_width=True)
                 else:
                     img_with_boxes = draw_detections(np.array(image), detections)
                     st.image(img_with_boxes, use_column_width=True)
 
-        # Summary
+        # ---------------- Summary ----------------
         st.markdown("---")
         st.subheader("📊 Detection Summary")
+
         class_counts = {}
         for det in detections:
             cls = det['class_name']
@@ -157,26 +193,42 @@ def main():
             ax.set_title("Distribusi Kelas Deteksi")
             st.pyplot(fig)
 
-        # Download
+        # ---------------- Download Section ----------------
         st.markdown("---")
         img_bytes = image_to_bytes(img_with_boxes)
-        st.download_button("📸 Download Gambar Hasil", data=img_bytes, file_name="detection_result.jpg", mime="image/jpeg")
-        csv_data = df_summary.to_csv(index=False).encode("utf-8")
-        st.download_button("📑 Download Data CSV", data=csv_data, file_name="detection_summary.csv", mime="text/csv")
-        json_data = df_summary.to_json(orient="records")
-        st.download_button("📘 Download Data JSON", data=json_data, file_name="detection_summary.json", mime="application/json")
+        st.download_button("📸 Download Gambar Hasil", data=img_bytes, file_name="detection_result.jpg")
 
+        csv_data = df_summary.to_csv(index=False).encode("utf-8")
+        st.download_button("📑 Download Data CSV", data=csv_data, file_name="detection_summary.csv")
+
+        json_data = df_summary.to_json(orient="records")
+        st.download_button("📘 Download Data JSON", data=json_data, file_name="detection_summary.json")
+
+        # ---------------- History Save ----------------
         if "history" not in st.session_state:
             st.session_state["history"] = []
+
+        summary_text = (
+            f"{class_counts.get('helmet', 0)} helmet, "
+            f"{class_counts.get('vest', 0)} vest, "
+            f"{class_counts.get('no-helmet', 0)} no-helmet, "
+            f"{class_counts.get('no-vest', 0)} no-vest"
+        )
+
         st.session_state["history"].append({
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "summary": f\"{class_counts.get('helmet', 0)} helmet, {class_counts.get('vest', 0)} vest, {class_counts.get('no-helmet', 0)} no-helmet, {class_counts.get('no-vest', 0)} no-vest\"
+            "summary": summary_text
         })
+
     else:
         st.info("👆 Silakan upload gambar untuk memulai deteksi.")
 
     st.markdown("---")
     st.markdown("<p style='text-align: center; color: gray;'>Capstone Project Module 4 - AI Engineer Training Program</p>", unsafe_allow_html=True)
 
+
+# ============================================================
+# START APP
+# ============================================================
 if __name__ == "__main__":
     main()
