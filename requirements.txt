@@ -1,17 +1,8 @@
-streamlit==1.36.0
-
-# Torch CPU wheels (kompatibel dengan Streamlit Cloud)
+streamlit
+pillow
+matplotlib
+numpy==1.26.4
+opencv-python-headless==4.8.1.78
+ultralytics==8.0.196
 torch==2.1.0
 torchvision==0.16.0
-
-ultralytics==8.0.196
-pillow==10.2.0
-matplotlib==3.7.3
-numpy==1.26.4
-
-# OpenCV headless yang kompatibel
-opencv-python-headless==4.7.0.72
-
-# Lock opencv-python agar tidak ikut terinstall
-opencv-python==0.0.0
---no-binary opencv-python
