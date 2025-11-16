@@ -225,10 +225,24 @@ def main():
             c4.metric("No Vest", counts_map.get("no-vest", 0))
             c5.metric("Person", counts_map.get("person", 0))
 
-            if counts_map.get("no-helmet", 0) + counts_map.get("no-vest", 0) > 0:
-                st.warning("⚠️ Ada pekerja yang tidak lengkap alat keselamatannya!")
+            total_person = counts_map.get("person", 0)
+            total_no_helmet = counts_map.get("no-helmet", 0)
+            total_no_vest = counts_map.get("no-vest", 0)
+
+            total_incomplete = max(total_no_helmet, total_no_vest)
+            total_complete = max(total_person - total_incomplete, 0)
+
+            st.markdown("### 🧍‍♂️ Kepatuhan Alat Keselamatan")
+
+            colA, colB = st.columns(2)
+            colA.metric("Pekerja Lengkap Alat", total_complete)
+            colB.metric("Pekerja Tidak Lengkap", total_incomplete)
+
+            if total_incomplete > 0:
+                st.error(f"⚠️ Ada {total_incomplete} pekerja yang tidak lengkap alat keselamatannya!")
             else:
-                st.success("✅ Semua pekerja sudah lengkap alat keselamatannya.")
+                st.success("✅  Semua pekerja sudah lengkap alat keselamatannya!")
+
 
             st.markdown("**Tabel Ringkasan**")
             st.dataframe(df_summary, use_container_width=True)
