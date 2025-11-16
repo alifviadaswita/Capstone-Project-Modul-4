@@ -20,7 +20,7 @@ st.set_page_config(
 # Load YOLO Model
 # ============================================================
 @st.cache_resource
-def load_model(path="best_withAug.pt"):
+def load_model(path="models/best_withAug.pt"):
     try:
         model = YOLO(path)
         return model
